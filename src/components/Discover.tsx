@@ -6,7 +6,7 @@ import { fetchFeed, fetchMatches, postSwipe } from '@/lib/api';
 import SwipeCard, { ProfileFace } from './SwipeCard';
 
 type View = 'deck' | 'matches';
-const ME_PHOTO = 'https://i.pravatar.cc/600?img=64';
+const ME_PHOTO = 'https://randomuser.me/api/portraits/lego/1.jpg';
 
 export default function Discover() {
   const [view, setView] = useState<View>('deck');
@@ -94,7 +94,7 @@ export default function Discover() {
       {toast && <div role="alert" className="absolute inset-x-4 bottom-4 rounded-xl bg-neutral-900 px-4 py-3 text-center text-sm text-white shadow-lg">{toast}</div>}
 
       {match && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-rose-500 to-fuchsia-700 p-6 text-white">
+        <div role="dialog" aria-modal="true" aria-label="It is a match" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-rose-500 to-fuchsia-700 p-6 text-white">
           <h2 className="text-4xl font-extrabold">It&apos;s a match!</h2>
           <div className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -121,7 +121,7 @@ function MatchesView() {
   if (!matches) return <div className="grid grid-cols-2 gap-3 px-4">{[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-neutral-200" />)}</div>;
   if (!matches.length) return <Center><h2 className="text-xl font-bold">No matches yet</h2><p className="text-neutral-500">Keep swiping — mutual likes show up here.</p></Center>;
   return (
-    <div className="grid grid-cols-2 gap-3 overflow-y-auto px-4 pb-4">
+    <div className="grid min-h-0 flex-1 auto-rows-max content-start grid-cols-2 gap-3 overflow-y-auto px-4 pb-4">
       {matches.map((m) => (
         <div key={m.id} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-300">
           {/* eslint-disable-next-line @next/next/no-img-element */}
