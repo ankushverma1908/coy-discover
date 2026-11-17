@@ -1,4 +1,5 @@
 # Coy Discover
+Live demo: https://coy-discover-production.up.railway.app
 
 Mobile-first swipe deck for **Coy**, a privacy-first crush app. Core promise: *nobody learns who liked them unless the like is mutual.*
 
