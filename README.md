@@ -54,7 +54,7 @@ Tests (`tests/swipes.test.ts`) cover: feed excludes swiped, like on liked-me →
 
 ## UX notes
 
-Drag with rotation, LIKE/NOPE stamps that fade in with distance, and spring-back under the 120 px / velocity threshold; heart/X buttons; ArrowLeft/ArrowRight. Swipes are optimistic; on failure the card is restored with a toast. A 300 ms client cooldown guards double-clicks, and the server's primary key plus immediate transaction guards races. Skeletons, error + retry, empty deck and empty matches states are included.
+Drag with rotation, LIKE/NOPE stamps that fade in with distance, and spring-back under the 120 px / velocity threshold; heart/X buttons; ArrowLeft/ArrowRight. Swipes are optimistic; on failure the card is restored with a toast. A 300 ms client cooldown guards double-clicks, and the server's primary key plus immediate transaction guards races. Skeletons, error + retry, empty deck and empty matches states are included.Tap a card (or a match) to open a profile detail sheet. The demo has a "Start over" button that clears swipes; it is disabled unless COY_ALLOW_RESET=1 is set on the server.
 
 ## Deployment
 
