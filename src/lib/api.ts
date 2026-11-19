@@ -8,4 +8,4 @@ export const fetchFeed = () => fetch('/api/feed', { cache: 'no-store' }).then((r
 export const fetchMatches = () => fetch('/api/matches', { cache: 'no-store' }).then((r) => json<{ matches: Profile[] }>(r)).then((d) => d.matches);
 export const postSwipe = (profileId: number, action: SwipeAction) =>
   fetch('/api/swipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profileId, action }) })
-    .then((r) => json<SwipeResult>(r));
+    .then((r) => json<SwipeResult>(r));export const resetDemo = () => fetch('/api/reset', { method: 'POST' }).then((r) => { if (!r.ok) throw new Error('Reset disabled'); });

@@ -49,3 +49,10 @@ export function swipe(db: DB, profileId: number, action: SwipeAction, userId = M
     return { matched: false };
   }).immediate();
 }
+/** Demo helper: clears this user's swipes and matches. Never touches profiles or incoming_likes. */
+export function resetSwipes(db: DB, userId = ME): void {
+  db.transaction(() => {
+    db.prepare('DELETE FROM matches WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM swipes WHERE user_id = ?').run(userId);
+  })();
+}

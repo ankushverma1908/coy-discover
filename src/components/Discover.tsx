@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import type { Profile, SwipeAction } from '@/lib/types';
-import { fetchFeed, fetchMatches, postSwipe } from '@/lib/api';
+import { fetchFeed, fetchMatches, postSwipe, resetDemo } from '@/lib/api';
 import SwipeCard, { ProfileFace } from './SwipeCard';
+import ProfileDetail from './ProfileDetail';
 
 type View = 'deck' | 'matches';
 const ME_PHOTO = 'https://randomuser.me/api/portraits/lego/1.jpg';
@@ -15,7 +16,9 @@ export default function Discover() {
   const [dir, setDir] = useState(1);
   const [match, setMatch] = useState<Profile | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [detail, setDetail] = useState<{ profile: Profile; actions: boolean } | null>(null);
   const cooling = useRef(false);
+  const flash = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
 
   const load = useCallback(() => {
     setError(false); setDeck(null);
@@ -34,20 +37,21 @@ export default function Discover() {
       .then((r) => { if (r.matched && r.match) setMatch(r.match); })
       .catch(() => {
         setDeck((d) => (d && !d.some((p) => p.id === top.id) ? [top, ...d] : d)); // restore card
-        setToast("Couldn't save that swipe. Please try again.");
-        setTimeout(() => setToast(null), 3000);
+        flash("Couldn't save that swipe. Please try again.");
       });
-  }, [deck, match]);
+  }, [deck, match, flash]);
+
+  const restart = () => resetDemo().then(load).catch(() => flash('Demo reset is disabled on this server.'));
 
   useEffect(() => {
-    if (view !== 'deck') return;
+    if (view !== 'deck' || detail) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') commit('like');
       if (e.key === 'ArrowLeft') commit('pass');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [view, commit]);
+  }, [view, commit, detail]);
 
   return (
     <div className="relative flex h-full flex-col">
@@ -67,7 +71,7 @@ export default function Discover() {
           ) : deck === null ? (
             <div className="flex-1 animate-pulse rounded-3xl bg-neutral-200" aria-label="Loading" />
           ) : deck.length === 0 ? (
-            <Center><h2 className="text-xl font-bold">You&apos;re all caught up</h2><p className="text-neutral-500">Check back later for new people.</p><Btn onClick={() => setView('matches')}>Check Matches</Btn></Center>
+            <Center><h2 className="text-xl font-bold">You&apos;re all caught up</h2><p className="text-neutral-500">Check back later for new people.</p><Btn onClick={() => setView('matches')}>Check Matches</Btn><button onClick={restart} className="text-sm font-semibold text-neutral-500 underline">Start over (demo)</button></Center>
           ) : (
             <>
               <div className="relative min-h-0 flex-1">
@@ -77,7 +81,7 @@ export default function Discover() {
                   </div>
                 )}
                 <AnimatePresence custom={dir}>
-                  <SwipeCard key={deck[0].id} profile={deck[0]} dir={dir} onSwipe={commit} />
+                  <SwipeCard key={deck[0].id} profile={deck[0]} dir={dir} onSwipe={commit} onOpen={() => setDetail({ profile: deck[0], actions: true })} />
                 </AnimatePresence>
               </div>
               <div className="flex justify-center gap-8 pt-4">
@@ -88,10 +92,18 @@ export default function Discover() {
           )}
         </div>
       ) : (
-        <MatchesView />
+        <MatchesView onOpen={(p) => setDetail({ profile: p, actions: false })} />
       )}
 
       {toast && <div role="alert" className="absolute inset-x-4 bottom-4 rounded-xl bg-neutral-900 px-4 py-3 text-center text-sm text-white shadow-lg">{toast}</div>}
+
+      {detail && !match && (
+        <ProfileDetail
+          profile={detail.profile}
+          onClose={() => setDetail(null)}
+          onAction={detail.actions ? (a) => { setDetail(null); commit(a); } : undefined}
+        />
+      )}
 
       {match && (
         <div role="dialog" aria-modal="true" aria-label="It is a match" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-rose-500 to-fuchsia-700 p-6 text-white">
@@ -113,7 +125,7 @@ export default function Discover() {
   );
 }
 
-function MatchesView() {
+function MatchesView({ onOpen }: { onOpen: (p: Profile) => void }) {
   const [matches, setMatches] = useState<Profile[] | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => { fetchMatches().then(setMatches).catch(() => setError(true)); }, []);
@@ -123,11 +135,11 @@ function MatchesView() {
   return (
     <div className="grid min-h-0 flex-1 auto-rows-max content-start grid-cols-2 gap-3 overflow-y-auto px-4 pb-4">
       {matches.map((m) => (
-        <div key={m.id} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-300">
+        <button key={m.id} onClick={() => onOpen(m)} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-300 text-left">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={m.photoUrl} alt={m.name} className="h-full w-full object-cover" />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-sm font-semibold text-white">{m.name}, {m.age}</div>
-        </div>
+        </button>
       ))}
     </div>
   );
